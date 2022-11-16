@@ -1,33 +1,58 @@
 const messageContainer = document.querySelector(".fil")
-const messageField = document.querySelector('#messageField')
-const sendMessageButton = document.querySelector('#sendMessageButton')
-const regUsername = document.querySelector('#regUsername')
-const regPassword = document.querySelector('#regPassword')
-const regButton = document.querySelector('#regButton')
+const messageField = document.querySelector('#messageField') // INPUT MESSAGE
+const sendMessageButton = document.querySelector('#sendMessageButton') // ENVOYER LE FORMULAIRE NOUVEAU MESSAGE
+const chatButton = document.querySelector('#chatButton') // AFFICHER LES MESSAGES
+const signUpButton = document.querySelector('#signUpButton') // AFFICHER LE FORMULAIRE D'INSCRIPTION
+const homeButton = document.querySelector('#homeButton')
 
-regButton.addEventListener("click", ()=>{
-    register(regUsername.value, regPassword.value)
+homeButton.addEventListener("click",()=>{
+    clearContainer()
+    templateHome()
 })
 
 sendMessageButton.addEventListener("click", ()=>{
+    clearContainer()
     getMessages()
     sendMessage(messageField.value)
+    messageField.value = ""
 })
 
-let userId = 2
+chatButton.addEventListener("click", ()=>{
+    showChat()
+})
+
+signUpButton.addEventListener("click",()=>{
+    showSignUpForm()
+})
+
+let userId = 5
 
 function getMessages(){
-     fetch('https://192.168.12.246:8000/messages')
+     fetch('https://139.162.156.85:8000/messages')
         .then(reponse=>reponse.json())
         .then(data=>{
             console.log(data)
-            data.forEach(message=>{
-                creerMessage(message)
+            data.reverse().forEach(message=>{
+                templateMessages(message)
             })
         })
 }
 
-function creerMessage(message){
+function clearContainer(){
+    messageContainer.innerHTML = ""
+}
+
+function templateHome(){
+    let template = `
+    <div class="mt-5 text-center d-flex flex-column justify-content-center">
+        <h1>Bienvenue sur Messenger</h1>
+        <h2>Cliquer sur Chat ci-dessus</h2>
+    </div>
+    `
+    messageContainer.innerHTML += template
+}
+
+function templateMessages(message){
     let template = `
     <div class="card mt-2 mb-2">
         <div class="card-body">
@@ -41,10 +66,30 @@ function creerMessage(message){
      messageContainer.innerHTML += template
  }
 
- getMessages()
+function templateSignUp(){
+    let template = `
+    <div class="mt-5 text-center d-flex flex-column justify-content-center">
+        <h1>S'inscrire</h1>
+        <label for="regUsername">Username : </label>
+        <input class="mb-4" id="regUsername">
+        <label for="regPassword">Password (at least 6) : </label>
+        <input class="mb-4" id="regPassword">
+        <button id="regButton" class="btn btn-primary">Envoyer</button>
+    </div>
+    `
+     messageContainer.innerHTML += template
+     const regButton = document.querySelector('#regButton') // ENVOYER LE FORMULAIRE INSCRIPTION
+     const regUsername = document.querySelector('#regUsername') // INPUT USERNAME
+     const regPassword = document.querySelector('#regPassword') // INPUT MDP
+     regButton.addEventListener("click", ()=>{
+         register(regUsername.value, regPassword.value)
+         showChat()
+     })
 
-function sendMessage(messageText){
-    let url = `https://192.168.12.246:8000/messages/${userId}/new`
+ }
+
+async function sendMessage(messageText){
+    let url = `https://139.162.156.85:8000/messages/${userId}/new`
     let body = {
         content : messageText
     }
@@ -53,11 +98,11 @@ function sendMessage(messageText){
         method : "POST",
         body: bodySerialise
     }
-    fetch(url, fetchParams)
+    await fetch(url, fetchParams)
 }
 
-function register(username, password){
-    let url = `https://192.168.12.246:8000/register`
+async function register(username, password){
+    let url = `https://139.162.156.85:8000/register`
     let body = {
         username: username,
         password: password
@@ -67,9 +112,19 @@ function register(username, password){
         method: "POST",
         body : bodySerialise
     }
-    fetch(url, fetchParams)
+    await fetch(url, fetchParams)
         .then(reponse=>reponse.json())
         .then(data=>{
             console.log(data)
         })
+}
+
+function showChat(){
+    clearContainer()
+    getMessages()
+}
+
+function showSignUpForm(){
+    clearContainer()
+    templateSignUp()
 }
